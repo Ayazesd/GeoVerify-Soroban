@@ -102,8 +102,8 @@ function App() {
           batch_id: Number(poi.batch_id),
           h3_id: h3IdKey,
           status: statusNum,
-          verification_score: verifScore,
-          malicious_score: malScore,
+          verify_count: Number(poi.verify_count || 0),
+          dispute_count: Number(poi.dispute_count || 0),
           author: poi.author?.toString() || poi.submitter?.toString() || "Bilinmiyor",
           metadata_ipfs_hash: poi.description_cid?.toString() || poi.ipfs_hash?.toString() || "",
           voters: poi.voters ? (Array.isArray(poi.voters) ? poi.voters.map((v: any) => v.toString()) : []) : []
@@ -295,8 +295,8 @@ function App() {
         batch_id: targetBatchId,
         h3_id: selectedH3Id,
         status: 0, // Pending (Sarı)
-        verification_score: 0,
-        malicious_score: 0,
+        verify_count: 0,
+        dispute_count: 0,
         author: wallet?.address || "Bilinmiyor",
         metadata_ipfs_hash: metadata,
         voters: [] // Yeni POI'de henüz oy yok
@@ -325,8 +325,8 @@ function App() {
       await client.verifyPoi(selectedPoiState.id);
       setStatusMessage(`POI #${selectedPoiState.id} doğrulandı.`);
 
-      // Hak düşümü
-      setRemainingRights(prev => prev !== null ? Math.max(0, prev - 1) : null);
+      // Hak düşümü (Local State Update)
+      setRemainingRights(prev => (prev !== null && prev > 0) ? prev - 1 : prev);
 
       await new Promise(resolve => setTimeout(resolve, 5000));
       await refreshOnChainData();
@@ -348,8 +348,8 @@ function App() {
       await client.flagPoi(selectedPoiState.id);
       setStatusMessage(`POI #${selectedPoiState.id} kötü amaçlı olarak işaretlendi.`);
 
-      // Hak düşümü
-      setRemainingRights(prev => prev !== null ? Math.max(0, prev - 1) : null);
+      // Hak düşümü (Local State Update)
+      setRemainingRights(prev => (prev !== null && prev > 0) ? prev - 1 : prev);
 
       await new Promise(resolve => setTimeout(resolve, 5000));
       await refreshOnChainData();
@@ -506,11 +506,11 @@ function App() {
               onVerify={verifySelectedPoi}
               onFlag={flagSelectedPoi}
               onQueryBatch={async (batchId) => {
-                // Batch POI'lerini kontrol et — %80 eşiği ceiling division ile
+                // Batch POI'lerini kontrol et — 2/3 eşiği
                 const batchPois = Object.values(poiStateMap).filter(p => p.batch_id === batchId);
                 const totalCount = batchPois.length;
                 const verifiedCount = batchPois.filter(p => p.status === 1).length;
-                const requiredCount = Math.max(1, Math.ceil((totalCount * 8) / 10));
+                const requiredCount = Math.ceil((totalCount * 2) / 3);
                 return { eligible: verifiedCount >= requiredCount, verifiedCount, totalCount, requiredCount };
               }}
               onFinalizeBatch={async (batchId) => {

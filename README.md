@@ -7,9 +7,31 @@ GeoVerify is a decentralized Location-of-Proof (PoL) and Point-of-Interest (POI)
 The platform operates on a robust verification logic where every reported location or error must be validated by the community.
 
 - **POI Submission:** Users submit a Point of Interest (POI) by staking a batch deposit.
-- **Verification Threshold:** For a POI to transition from `Pending` to `Confirmed` status, it must receive **3 unique votes** from different wallet addresses.
+- **Verification Threshold:** For a POI to transition from `Pending` to `Confirmed` status, it must receive **1 unique vote** (Optimized for testing).
 - **Visual Feedback:** Confirmed locations are highlighted in **bright green** on the HexGrid, while pending reports remain yellow.
-- **Trustless Execution:** Once the 3-vote threshold is met, the POI status is automatically updated on-chain, making it eligible for protocol rewards or batch finalization.
+- **Trustless Execution:** Once the 1-vote threshold is met, the POI status is automatically updated on-chain.
+
+## 📸 Visual Demo & Proof of Work
+
+### 1. Batch Staking & POI Submission
+Users deposit 50 XLM to open a batch and submit location reports with detailed metadata.
+| Batch Staking (-50 XLM) | Submission Form |
+|:---:|:---:|
+| ![Staking Proof](./screenshots/staking_proof.png) | ![Submission Flow](./screenshots/submission_flow.png) |
+
+### 2. Map Overview & Consensus
+Real-time hexagonal grid showing confirmed (green), pending (yellow), and disputed (red) locations.
+![Map Overview](./screenshots/map_overview.png)
+
+### 3. Refund Mechanism (+50 XLM)
+Proof of successful batch finalization and the 50 XLM deposit refund triggered by the smart contract.
+| Wallet Confirmation | Transaction History |
+|:---:|:---:|
+| ![Wallet Confirm](./screenshots/wallet_confirm.png) | ![Refund History](./screenshots/refund_history.png) |
+
+### 4. On-Chain Verification
+Detailed transaction log on Stellar Expert showing the `finalize_batch` invocation and internal XLM transfer.
+![Stellar Expert Transaction](./screenshots/tx_details.png)
 
 ## 💰 Economic Model: Deposit & Refund
 
@@ -50,10 +72,16 @@ GeoVerify ensures data integrity through a staking mechanism that rewards honest
 Create a `.env` file in the root directory:
 ```env
 VITE_GOOGLE_MAPS_API_KEY=your_api_key
-VITE_GEOVERIFY_CONTRACT_ID=your_contract_id
+VITE_GEOVERIFY_CONTRACT_ID=CDZJ55WLCAT4KXV3KJZDBFLQL2C2PI3OSLQ2YI7GU2FFNHTYD6BRZPX4
 VITE_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
 VITE_STELLAR_NETWORK=TESTNET
 ```
+
+### 🚢 Deployment Details (Testnet)
+- **Contract ID:** `CDZJ55WLCAT4KXV3KJZDBFLQL2C2PI3OSLQ2YI7GU2FFNHTYD6BRZPX4`
+- **Deployment Transaction Hash:** [`4a74ce04fddf616194ab22d96c025f3ffa8f707e7defe149d897b71aaf6f282c`](https://stellar.expert/explorer/testnet/tx/4a74ce04fddf616194ab22d96c025f3ffa8f707e7defe149d897b71aaf6f282c)
+- **Asset (XLM) SAC:** `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
+
 
 ### Contract Build
 To build the Soroban contract with the correct target for Stellar, use:

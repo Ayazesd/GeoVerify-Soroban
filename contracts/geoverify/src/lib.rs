@@ -56,6 +56,13 @@ pub enum PoiStatus {
 }
 
 #[contracttype]
+#[derive(Clone, Eq, PartialEq, Debug)]
+pub enum VoteType {
+    Verify,
+    Dispute,
+}
+
+#[contracttype]
 #[derive(Clone)]
 pub struct SystemConfig {
     pub admin: Address,
@@ -82,8 +89,8 @@ pub struct Poi {
     pub author: Address,
     pub h3_index: Symbol,
     pub description_cid: String,
-    pub trust_score: i32,
-    pub voters: Vec<Address>,
+    pub verify_count: u32,
+    pub dispute_count: u32,
     pub status: PoiStatus,
 }
 
@@ -95,9 +102,9 @@ pub enum DataKey {
     NextPoiId,           // Instance Storage
     Batch(u64),          // Persistent Storage
     Poi(u64),            // Persistent Storage
-    Vote(u64, Address),  // Persistent Storage (Optimizasyon için ayrı key)
-    TreasuryBalance,     // Instance Storage (Hazine Havuzu)
-    UserRights(Address), // Persistent Storage (Kullanıcı İşlem Hakları)
+    Vote(u64, Address),  // Persistent Storage (Bireysel oylar)
+    TreasuryBalance,     // Instance Storage
+    UserRights(Address), // Persistent Storage
 }
 
 // =========================================================================
@@ -227,8 +234,8 @@ impl GeoVerifyContract {
             author: user,
             h3_index,
             description_cid: cid,
-            trust_score: 0,
-            voters: Vec::new(&env),
+            verify_count: 0,
+            dispute_count: 0,
             status: PoiStatus::Pending,
         };
 
@@ -244,32 +251,37 @@ impl GeoVerifyContract {
         Ok(poi_id)
     }
 
-    /// Diğer kullanıcıların POI doğrulama (veya hatalı bildirme) fonksiyonu
-    pub fn vote_poi(env: Env, voter: Address, poi_id: u64, approve: bool) -> Result<(), GeoVerifyError> {
+    /// Diğer kullanıcıların POI doğrulama veya itiraz etme fonksiyonu
+    pub fn vote_poi(env: Env, voter: Address, poi_id: u64, vote_type: u32) -> Result<(), GeoVerifyError> {
         voter.require_auth();
 
-        // Kullanıcının hakkı kontrol et ve azalt
+        // Kullanıcının hakkını kontrol et ve azalt
         Self::use_right(&env, &voter)?;
 
         let mut poi: Poi = env.storage().persistent().get(&DataKey::Poi(poi_id)).ok_or(GeoVerifyError::PoiNotFound)?;
         
-        // Mükerrer oy kontrolü (Zaten struct içinde tuttuğumuz için buradan da bakabiliriz)
-        if poi.voters.contains(&voter) {
+        // Mükerrer oy kontrolü (DataKey::Vote kullanarak)
+        let vote_key = DataKey::Vote(poi_id, voter.clone());
+        if env.storage().persistent().has(&vote_key) {
             return Err(GeoVerifyError::AlreadyVoted);
         }
 
-        // Oyu ekle
-        poi.voters.push_back(voter.clone());
+        // Oyu kaydet (0: Onay, 1: İtiraz)
+        env.storage().persistent().set(&vote_key, &vote_type);
+        env.storage().persistent().extend_ttl(&vote_key, MIN_TTL, EXTEND_TTL);
 
-        if approve {
-            poi.trust_score += 1;
+        if vote_type == 0 {
+            poi.verify_count += 1;
         } else {
-            poi.trust_score -= 1;
+            poi.dispute_count += 1;
         }
 
-        // Eşik Kontrolü: 3 oy onay demektir
-        if poi.voters.len() >= 3 {
+        // Eşik Kontrolü: 1 Olumlu (Verify) oy onay demektir (Hızlandırılmış Test)
+        if poi.verify_count >= 1 {
             poi.status = PoiStatus::Confirmed;
+        } else if poi.dispute_count > 0 {
+            // Eğer itiraz varsa ve henüz onaylanmamışsa Rejected/Disputed olarak gösterilebilir
+            poi.status = PoiStatus::Rejected;
         }
 
         env.storage().persistent().set(&DataKey::Poi(poi_id), &poi);
@@ -305,12 +317,8 @@ impl GeoVerifyContract {
             }
         }
 
-        // %80 başarı eşiği: Ceiling division ile hesapla ki 1-2 POI'li paketlerde
-        // tam sayı yuvarlama hatası olmasın. (poi_count * 8 + 9) / 10 formülü
-        // her zaman tavanı alır → 1 POI için 1, 2 POI için 2, 10 için 8.
-        // .max(1) ile sıfır çıkmamasını garanti altına alıyoruz.
-        let required_verified = ((batch.poi_count * 8 + 9) / 10).max(1);
-        if verified_count < required_verified {
+        // 2/3 başarı eşiği: (verified_count * 3 >= poi_count * 2)
+        if verified_count * 3 < batch.poi_count * 2 {
             return Err(GeoVerifyError::BatchNotVerified);
         }
 
@@ -342,7 +350,7 @@ impl GeoVerifyContract {
         let mut has_malicious = false;
         for poi_id in batch.poi_ids.clone() {
             let poi: Poi = env.storage().persistent().get(&DataKey::Poi(poi_id)).ok_or(GeoVerifyError::PoiNotFound)?;
-            if poi.trust_score < 0 {
+            if poi.dispute_count > 0 {
                 has_malicious = true;
                 break;
             }

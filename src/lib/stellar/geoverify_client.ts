@@ -196,22 +196,20 @@ export class GeoVerifyClient {
   async verifyPoi(poiId: number) {
     const session = await this.connectWallet();
 
-    // vote_poi parametrelerinde batch_id bulunmuyor, poi_id üzerinden kontrat kendisi buluyor.
     return this.invoke("vote_poi", session, [
       nativeToScVal(session.address, { type: "address" }),
       nativeToScVal(poiId, { type: "u64" }),
-      nativeToScVal(true, { type: "bool" })
+      nativeToScVal(0, { type: "u32" }) // 0: Verify
     ]);
   }
 
   async flagPoi(poiId: number) {
     const session = await this.connectWallet();
 
-    // vote_poi parametrelerinde batch_id bulunmuyor, poi_id üzerinden kontrat kendisi buluyor.
     return this.invoke("vote_poi", session, [
       nativeToScVal(session.address, { type: "address" }),
       nativeToScVal(poiId, { type: "u64" }),
-      nativeToScVal(false, { type: "bool" })
+      nativeToScVal(1, { type: "u32" }) // 1: Dispute
     ]);
   }
 

@@ -45,7 +45,9 @@ export function SelectedHexPanel({
   const outOfRights = remainingRights !== null && remainingRights <= 0;
   
   const isConfirmed = selectedPoiState?.status === 1;
-  const voterCount = selectedPoiState?.voters?.length || 0;
+  const isRejected = selectedPoiState?.status === 2;
+  const verifyCount = selectedPoiState?.verify_count || 0;
+  const disputeCount = selectedPoiState?.dispute_count || 0;
   
   // Oy butonlarını göster: sadece üçüncü taraf, oy kullanmamış kullanıcılara ve henüz onaylanmamışlara
   const showVoteButtons = !isAuthor && !hasVoted && !isConfirmed;
@@ -103,23 +105,27 @@ export function SelectedHexPanel({
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-black/30 p-4 rounded-xl border border-white/5">
               <span className="block text-xs text-gray-400 mb-1 uppercase">Durum</span>
-              <span className={`font-bold ${isConfirmed ? 'text-[#00ff88]' :
-                selectedPoiState.status === 2 ? 'text-geoverify-malicious' : 'text-geoverify-pending'
+                <span className={`font-bold ${isConfirmed ? 'text-[#00ff88]' :
+                isRejected ? 'text-geoverify-malicious' : 'text-geoverify-pending'
                 }`}>
                 {isConfirmed ? "Doğrulandı" :
-                  selectedPoiState.status === 2 ? "Reddedildi" : "İnceleniyor"}
+                  isRejected ? "İtiraz Edildi" : "İnceleniyor"}
               </span>
             </div>
             <div className="bg-black/30 p-4 rounded-xl border border-white/5 flex flex-col justify-center">
               <div className="flex justify-between text-[10px] text-gray-400 mb-1">
-                <span>Konsensüs</span>
-                <span className="font-mono">{voterCount}/3</span>
+                <span>Doğrulama (1/1)</span>
+                <span className="font-mono text-geoverify-accent">{verifyCount}/1</span>
               </div>
               <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
                 <div 
-                  className={`h-full transition-all duration-700 ${isConfirmed ? 'bg-[#00ff88]' : 'bg-[#ffcc00]'}`}
-                  style={{ width: `${Math.min(100, (voterCount / 3) * 100)}%` }}
+                   className={`h-full transition-all duration-700 ${isConfirmed ? 'bg-[#00ff88]' : 'bg-[#00ffcc]'}`}
+                   style={{ width: `${Math.min(100, (verifyCount / 1) * 100)}%` }}
                 />
+              </div>
+              <div className="mt-1 flex justify-between text-[8px] text-gray-500 uppercase tracking-tighter">
+                <span>Olumsuz İtiraz:</span>
+                <span className={disputeCount > 0 ? 'text-geoverify-malicious font-bold' : ''}>{disputeCount}</span>
               </div>
             </div>
           </div>
@@ -158,7 +164,7 @@ export function SelectedHexPanel({
                     style={{ background: 'rgba(0,255,0,0.08)', border: '1px solid rgba(0,255,0,0.2)', color: '#00ff00', boxShadow: busy ? 'none' : '0 0 10px rgba(0,255,0,0.1)' }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 6 9 17l-5-5" /></svg>
-                    {busy ? "İşleniyor" : "Katılıyorum"}
+                    {busy ? "İşleniyor" : "Doğrula"}
                   </button>
                   <button
                     onClick={onFlag}
@@ -167,7 +173,7 @@ export function SelectedHexPanel({
                     style={{ background: 'rgba(255,0,68,0.08)', border: '1px solid rgba(255,0,68,0.2)', color: '#ff0044', boxShadow: busy ? 'none' : '0 0 10px rgba(255,0,68,0.1)' }}
                   >
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" /><line x1="4" x2="4" y1="22" y2="15" /></svg>
-                    {busy ? "İşleniyor" : "Hatalı Bildirim"}
+                    {busy ? "İşleniyor" : "İtiraz Et"}
                   </button>
                 </div>
               ) : (
@@ -245,7 +251,7 @@ export function SelectedHexPanel({
                       </p>
                       {!queryStatus.eligible && (
                         <p className="text-gray-500 text-xs mt-1">
-                          %80 eşiğine ulaşmak için {queryStatus.requiredCount - queryStatus.verifiedCount} POI daha doğrulanması gerekiyor.
+                          2/3 eşiğine ulaşmak için {queryStatus.requiredCount - queryStatus.verifiedCount} POI daha doğrulanması gerekiyor.
                         </p>
                       )}
                     </div>

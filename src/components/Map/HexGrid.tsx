@@ -7,8 +7,8 @@ export interface PoiState {
   batch_id: number;
   h3_id: string;
   status: number; // 0: Pending, 1: Confirmed, 2: Rejected
-  verification_score: number;
-  malicious_score: number;
+  verify_count: number;
+  dispute_count: number;
   author?: string;
   metadata_ipfs_hash?: string;
   voters?: string[]; // Oy veren cüzdan adreslerinin listesi
@@ -221,7 +221,7 @@ export function HexGrid({
               infoWindowRef.current.setContent(
                 `<strong>POI #${stateToPass.id}</strong><br/>
                 Durum: ${stateToPass.status === 1 ? "Doğrulandı" : stateToPass.status === 2 ? "Malicious" : "İşlemde"}<br/>
-                Puan: ${stateToPass.verification_score}`
+                Olumlu: ${stateToPass.verify_count} | Olumsuz: ${stateToPass.dispute_count}`
               );
             } else {
               infoWindowRef.current.setContent(`<strong>Boş Bölge</strong><br/><small>${h3Id}</small>`);
@@ -410,7 +410,7 @@ export function HexGrid({
       }}>
         {[
           { color: '#cccccc', label: 'Boş Bölge' },
-          { color: '#ff0044', label: 'Kötü Amaçlı' },
+          { color: '#ff0044', label: 'İtiraz Edilmiş' },
           { color: '#ffcc00', label: 'İnceleniyor' },
           { color: '#00ff00', label: 'Doğrulandı' },
         ].map(({ color, label }) => (
