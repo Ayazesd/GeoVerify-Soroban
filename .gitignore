@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.env
+.env.local
+coverage/
+target/
+.tools/
+.preview.log
+.preview.err.log
+*.tsbuildinfo
+nul
+CTRGT/
+CTRGT2/
+CTRGT3/
+agent/
