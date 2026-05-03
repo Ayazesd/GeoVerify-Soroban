@@ -21,7 +21,9 @@ Users deposit 50 XLM to open a batch and submit location reports with detailed m
 
 ### 2. Map Overview & Consensus
 Real-time hexagonal grid showing confirmed (green), pending (yellow), and disputed (red) locations.
-![Map Overview](./screenshots/map_overview.png)
+| Grid View | POI Details |
+|:---:|:---:|
+| ![Map Overview](./screenshots/map_overview.png) | ![POI Details](./screenshots/poi_details.png) |
 
 ### 3. Refund Mechanism (+50 XLM)
 Proof of successful batch finalization and the 50 XLM deposit refund triggered by the smart contract.
