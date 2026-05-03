@@ -1,89 +1,64 @@
-# Konum Kanıtı
+# GeoVerify Soroban
 
-`Konum Kanıtı`, merkezi olmayan son kilometre adres doğrulaması için geliştirilmiş bir Stellar + Soroban DePIN prototipidir. Hedef, navigasyonun başarısız olduğu noktaları düzeltmektir: apartman girişleri, kapıcı masaları, servis yolları, site kapıları ve yalnızca teslimat yapılabilen erişim noktaları.
+GeoVerify is a decentralized Location-of-Proof (PoL) and Point-of-Interest (POI) verification platform built on the **Stellar Soroban** blockchain. It leverages a decentralized consensus mechanism to ensure the accuracy of physical location data, providing a trust layer for DePIN (Decentralized Physical Infrastructure Networks) projects.
 
-Bu depo, istenen mimariye göre yapılandırılmıştır:
+## 🚀 Core Principle: 3-Vote Consensus
 
-- `contracts/geoverify/src/lib.rs`: Soroban akıllı sözleşmesi
-- `src/lib/stellar/geoverify_client.ts`: Freighter + Stellar SDK istemcisi
-- `agent/skills/geoverify_skill.md`: Doğrulama otomasyonu için AI ajan becerisi tanımı
-- `src/components/Map/HexGrid.tsx`: H3 + Google Haritalar güven yüzeyi görselleştirmesi
+The platform operates on a robust verification logic where every reported location or error must be validated by the community.
 
-## Neler Dahil
+- **POI Submission:** Users submit a Point of Interest (POI) by staking a batch deposit.
+- **Verification Threshold:** For a POI to transition from `Pending` to `Confirmed` status, it must receive **3 unique votes** from different wallet addresses.
+- **Visual Feedback:** Confirmed locations are highlighted in **bright green** on the HexGrid, while pending reports remain yellow.
+- **Trustless Execution:** Once the 3-vote threshold is met, the POI status is automatically updated on-chain, making it eligible for protocol rewards or batch finalization.
 
-- Şunları yöneten bir Soroban sözleşmesi:
-  - `50 XLM` emanet destekli paketler
-  - Paket başına `10` POI
-  - H3 çözünürlüğü `8`
-  - Ağırlıklı sakin ve kurye oylaması
-  - Başarılı paketler için paylaşılan hazine finansmanı
-  - Kötü niyetli anlaşmazlık tırmanması ve hazine destekli paket kesintisi (slashing)
-- **Konum Kanıtı** markasıyla React frontend'i
-- Kırmızı / Sarı / Yeşil güven durumlarıyla Google Haritalar tabanlı heksagon grid görünümü
-- Sözleşmeyi çağırmak için Freighter'a hazır TypeScript istemcisi
-- Otomatik kurye/sakin doğrulama akışları için ajan becerisi dosyası
+## 💰 Economic Model: Deposit & Refund
 
-## Hazine Modeli
+GeoVerify ensures data integrity through a staking mechanism that rewards honest contributors and penalizes malicious actors.
 
-Başarısız depozitolar yakılmak yerine bu uygulama, kesilen XLM'i protokol hazinesinde tutar. Bu hazine daha sonra doğrulanmış paketler sonuçlandırıldığında dürüst katkıcılara ödül ödemek için kullanılır.
+- **Batch Deposit:** To submit a batch of reports, users must deposit **50 XLM** into the smart contract's vault.
+- **Success Rate Threshold:** A batch is eligible for a **full refund** only if at least **80%** of the POIs within it reach the `Confirmed` status (3-vote consensus).
+- **Refund Mechanism:** Upon successful verification, the user can trigger the `finalize_batch` function to withdraw their 50 XLM deposit back to their wallet.
+- **Slashing:** If the batch fails to meet the verification threshold, the deposit remains locked or can be slashed to fund the protocol treasury for honest verifiers.
 
-İlgili Stellar belgeleri:
+## 🛠 Technology Stack
 
-- Stellar Varlık Sözleşmesi'ne genel bakış: https://developers.stellar.org/docs/tokens/stellar-asset-contract
-- Yerel varlık SAC dağıtımı ve davranışı: https://developers.stellar.org/docs/build/guides/cli/deploy-stellar-asset-contract
+- **Smart Contracts:** Rust-based Soroban contracts utilizing persistent storage for data durability.
+- **Frontend:** React with TypeScript, providing a real-time interactive dashboard.
+- **Mapping:** Google Maps API integrated with **Uber's H3 Hexagonal Hierarchical Spatial Indexing**.
+- **Wallet Integration:** Freighter Wallet for secure on-chain transactions and identity management.
 
-## Frontend Kurulumu
+## 📂 Project Structure
 
-Bu uygulama artık canlı haritayı render etmek için resmi Google Maps JavaScript API'yi kullanmaktadır. Gömülü etkileşimli harita için tarayıcı tarafı harita SDK'sına ihtiyaç duyulmaktadır.
+- `/contracts`: Rust source code for the GeoVerify Soroban contract.
+- `/src/lib/stellar`: TypeScript client implementation for Soroban RPC interaction.
+- `/src/components/Map`: Hexagonal grid rendering logic using H3.
+- `/src/components/Panel`: UI components for POI details, voting progress, and batch finalization.
 
-İlgili belgeler:
+## 🔧 Getting Started
 
-- Google Maps JavaScript API'ye genel bakış: https://developers.google.com/maps/documentation/javascript/overview
-- Maps JavaScript API yükleme: https://developers.google.com/maps/documentation/javascript/load-maps-js-api
-- Poligon katmanları: https://developers.google.com/maps/documentation/javascript/reference/polygon
+### Prerequisites
+- Node.js & npm
+- Stellar CLI
+- Freighter Wallet (configured for Testnet)
 
-`.env.example` dosyasından yerel `.env` dosyası oluşturun:
-
-```bash
-VITE_GOOGLE_MAPS_API_KEY=GOOGLE_MAPS_TARAYICI_ANAHTARINIZ
-VITE_GOOGLE_MAPS_MAP_ID=
-VITE_GEOVERIFY_CONTRACT_ID=CC...
+### Environment Setup
+Create a `.env` file in the root directory:
+```env
+VITE_GOOGLE_MAPS_API_KEY=your_api_key
+VITE_GEOVERIFY_CONTRACT_ID=your_contract_id
 VITE_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
 VITE_STELLAR_NETWORK=TESTNET
-VITE_STELLAR_NETWORK_PASSPHRASE=Test SDF Network ; September 2015
 ```
 
-Bağımlılıkları yükleyin ve uygulamayı başlatın:
-
+### Installation
 ```bash
 npm install
 npm run dev
 ```
 
-## Sözleşme Kurulumu
+## 🛡 Security & Integrity
 
-Sözleşmeyi derlemek ve dağıtmak için Rust + Stellar CLI ortamı gereklidir:
+All critical actions, including `submit_poi`, `vote_poi`, and `finalize_batch`, require explicit authorization (`require_auth`) from the user's wallet, ensuring that no third party can manipulate the consensus or refund process.
 
-```bash
-cargo test --manifest-path contracts/Cargo.toml -p geoverify
-stellar contract build --package geoverify --manifest-path contracts/Cargo.toml
-```
-
-Dağıtımın ardından, dağıtılan sözleşme kimliğini `VITE_GEOVERIFY_CONTRACT_ID` değerine yerleştirin.
-
-## Beklenen İş Akışı
-
-1. Sözleşmeyi şunlarla başlatın:
-   - `admin` (yönetici adresi)
-   - Yerel XLM SAC adresi
-2. `fund_treasury` veya geriye dönük uyumlu `fund_rewards` kullanarak hazineyi doldurun.
-3. Kullanıcılar `create_batch` ile paket açar.
-4. POI'ler `submit_poi` ile gönderilir.
-5. Kuryeler ve sakinler `verify_poi` ile doğrulama yapar.
-6. Anlaşmazlıklar `flag_poi` üzerinden tırmanır.
-7. Başarılı paketler `finalize_batch` çağırır; sahte olanlar `slash_batch` çağırır ve depozitoyu hazineye aktarır.
-
-## Notlar
-
-- Bu ortamda `node`, `npm`, `rust`, `cargo` veya `git` yüklü olmadığından, buradaki kod yerel olarak çalıştırılmadan hazırlanmıştır.
-- Frontend, canlı bir sözleşme bağlamadan önce sitenin anlamlı H3 bölgelerine sahip olması için İstanbul etrafında çalışan bir demo veri katmanıyla birlikte gelmektedir.
+---
+Built with ❤️ for the Stellar DePIN Ecosystem.
