@@ -38,7 +38,7 @@ Detailed transaction log on Stellar Expert showing the `finalize_batch` invocati
 GeoVerify ensures data integrity through a staking mechanism that rewards honest contributors and penalizes malicious actors.
 
 - **Batch Deposit:** To submit a batch of reports, users must deposit **50 XLM** into the smart contract's vault.
-- **Success Rate Threshold:** A batch is eligible for a **full refund** only if at least **80%** of the POIs within it reach the `Confirmed` status (3-vote consensus).
+- **Success Rate Threshold:** A batch is eligible for a **full refund** only if at least **2/3 (~66.6%)** of the POIs within it reach the `Confirmed` status (1-vote consensus).
 - **Refund Mechanism:** Upon successful verification, the user can trigger the `finalize_batch` function to withdraw their 50 XLM deposit back to their wallet.
 - **Slashing:** If the batch fails to meet the verification threshold, the deposit remains locked or can be slashed to fund the protocol treasury for honest verifiers.
 
