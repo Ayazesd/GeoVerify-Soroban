@@ -22,9 +22,9 @@ GeoVerify ensures data integrity through a staking mechanism that rewards honest
 
 ## 🛠 Technology Stack
 
-- **Smart Contracts:** Rust-based Soroban contracts utilizing persistent storage for data durability.
+- **Smart Contracts:** Rust-based Soroban contracts utilizing **persistent storage** for cross-ledger data durability.
 - **Frontend:** React with TypeScript, providing a real-time interactive dashboard.
-- **Mapping:** Google Maps API integrated with **Uber's H3 Hexagonal Hierarchical Spatial Indexing**.
+- **Mapping:** Google Maps API integrated with **Uber's H3 Hexagonal Hierarchical Spatial Indexing** (Resolution 9 for high-precision street-level accuracy).
 - **Wallet Integration:** Freighter Wallet for secure on-chain transactions and identity management.
 
 ## 📂 Project Structure
@@ -50,7 +50,15 @@ VITE_SOROBAN_RPC_URL=https://soroban-testnet.stellar.org
 VITE_STELLAR_NETWORK=TESTNET
 ```
 
-### Installation
+### Contract Build
+To build the Soroban contract with the correct target for Stellar, use:
+```bash
+cd contracts/geoverify
+stellar contract build
+```
+*(Note: Ensure you have the `wasm32v1-none` target installed via rustup for compatibility).*
+
+### Web App Installation
 ```bash
 npm install
 npm run dev
