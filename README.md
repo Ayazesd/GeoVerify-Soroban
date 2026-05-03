@@ -59,8 +59,8 @@ GeoVerify ensures data integrity through a staking mechanism that rewards honest
 - `/src/components/Panel`: UI components for POI details, voting progress, and batch finalization.
 
 ### 🚢 Deployment Details (Testnet)
-- **Contract ID:** `CB6LQFULMETTCRBBORJ6RSLR5W7P67H7UXJOJED7QHCKA3MAHEGM5FAY`
-- **Deployment Transaction Hash:** [`df94556526a7986697fe891887dfeb7018b2a4dc2835f5c2be6efe98930d23a1`](https://stellar.expert/explorer/testnet/tx/df94556526a7986697fe891887dfeb7018b2a4dc2835f5c2be6efe98930d23a1)
+- **Contract ID:** `CAG4OO2ZOVYETAA5AXKKTHBPDYBISOLWENOVMYJP6M6BNQSREIINB4WM`
+- **Deployment Transaction Hash:** [`1a910666ca634d64c1763fac5efbbdaa2ef3d1da5ce2714e81e414148a189176`](https://stellar.expert/explorer/testnet/tx/1a910666ca634d64c1763fac5efbbdaa2ef3d1da5ce2714e81e414148a189176)
 - **Asset (XLM) SAC:** `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC`
 
 ## 🔧 Getting Started
